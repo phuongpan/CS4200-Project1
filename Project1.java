@@ -32,14 +32,6 @@ public class Project1 {
 			
 			if(input == 1) // generate a random matrix
 			{
-				int initial[] = {0,1,2,3,4,5,6,7,8 };
-				Generate_Random_Matrix(initial);
-				while(!isSolvable(initial))
-				{
-					System.out.println("Unsolvable");
-					Generate_Random_Matrix(initial);
-				}
-				System.out.println("solvable");
 				Functions();
 				int input2 = sc.nextInt();
 				while(input2 < 1 || input2 > 2)
@@ -47,10 +39,29 @@ public class Project1 {
 					System.out.println("Please input from the range 1 or 2!");
 					input = sc.nextInt();
 				}
-				if(input2 == 1)
-					Heuristic1(initial, pos, goal);
-				else
-					Heuristic2(initial, pos, goal);
+				int outOfdepth = -1;
+				System.out.println("Generating matrix...");
+				while(outOfdepth < 0)
+				{
+					int initial[] = {0,1,2,3,4,5,6,7,8 };
+					Generate_Random_Matrix(initial);
+					while(!isSolvable(initial))
+					{
+						//System.out.println("Unsolvable");
+						Generate_Random_Matrix(initial);
+					}
+					//System.out.println("solvable");
+					if(input2 == 1)
+					{
+						outOfdepth = Heuristic1(initial, pos, goal, input2);
+						Heuristic2(initial, pos, goal, input2);
+					}	
+					else
+					{	
+						outOfdepth = Heuristic2(initial, pos, goal, input2);
+						Heuristic1(initial, pos, goal, input2);
+					}
+				}
 				
 			}
 			else if (input == 2)
@@ -85,19 +96,31 @@ public class Project1 {
         		{
 					Functions();
 					int input2 = sc.nextInt();
+					int outOfdepth; 
 					while(input2 < 1 || input2 > 2)
 					{
 						System.out.println("Please input from the range 1 or 2!");
 						input = sc.nextInt();
 					}
 					if(input2 == 1)
-						Heuristic1(initial, pos, goal);
+					{	
+						outOfdepth = Heuristic1(initial, pos, goal, input2);
+						Heuristic2(initial, pos, goal, input2);
+						if(outOfdepth < 0 )
+							System.out.println("Depth is greater than 20. Try another puzzle!!!");
+					}
 					else
-						Heuristic2(initial, pos, goal);
+					{
+						outOfdepth = Heuristic2(initial, pos, goal, input2);
+						Heuristic1(initial, pos, goal, input2);
+						if(outOfdepth < 0 )
+							System.out.println("Depth is greater than 20. Try another puzzle!!!");
+						
+					}
         		}
         		else
         		{
-        			System.out.println("Unsolvable");
+        			System.out.println("The puzzle is unsolvable.");
         		}
 			}
 			else if( input == 3)
@@ -109,7 +132,19 @@ public class Project1 {
 					Scanner readFile = new Scanner(file);
 					int[] initial = new int [9];
 					int i = 0;
-					while (readFile.hasNextLine() ) {
+					
+					Functions();
+    				int input2 = sc.nextInt();
+    				int outOfdepth;
+    				while(input2 < 1 || input2 > 2)
+    				{
+    					System.out.println("Please input from the range 1 or 2!");
+    					input = sc.nextInt();
+    				}
+					
+    				int numberOfpuzzle= 1;
+					while (readFile.hasNextLine() ) 
+					{
 					        String data = readFile.nextLine();
 					        if(Character.isDigit(data.charAt(0)))
 					        {
@@ -128,27 +163,37 @@ public class Project1 {
 					        	}
 					        	if(i == initial.length)
 					        	{
+					        		System.out.println("------------- Puzzle #"+ numberOfpuzzle +" -------------");
+					        		numberOfpuzzle++;
+					        	}
+					        	
+					        	if(i == initial.length)
+					        	{
 					        		if(isSolvable(initial))
 					        		{
-					        			Functions();
-					    				int input2 = sc.nextInt();
-					    				while(input2 < 1 || input2 > 2)
-					    				{
-					    					System.out.println("Please input from the range 1 or 2!");
-					    					input = sc.nextInt();
-					    				}
 					    				if(input2 == 1)
-					    					Heuristic1(initial, pos, goal);
+					    				{
+					    					outOfdepth = Heuristic1(initial, pos, goal, input2);
+					    					Heuristic2(initial, pos, goal, input2);
+					    					if(outOfdepth < 0 )
+												System.out.println("Depth is greater than 20 - stopped geneated");
+					    				}	
 					    				else
-					    					Heuristic2(initial, pos, goal);
-						        		System.out.println("-------------------------");
+					    				{	
+					    					outOfdepth = Heuristic2(initial, pos, goal, input2);
+					    					Heuristic1(initial, pos, goal, input2);
+					    					if(outOfdepth < 0 )
+												System.out.println("Depth is greater than 20 - stopped geneated");
+					    				
+					    				}
 					        		}
 					        		else
 					        		{
-					        			System.out.println("Unsolvable");
+					        			System.out.println("The puzzle is unsolvable");
 					        		}
 					        		
 					        	}
+					        	
 					        		
 					        }
 					        else
@@ -277,12 +322,12 @@ public class Project1 {
 	{
 	    // Count inversions in given 8 puzzle
 	    int invCount = getInvCount(puzzle);
-	    System.out.println(invCount);
 	    if(invCount % 2 == 0)
 	    	return true;
 	    return false;
 	}
-	public static void Heuristic1(int[] initial, int pos, int[] goal) {
+	// ------------------------------------------Heuristic 1------------------------------------
+	public static int Heuristic1(int[] initial, int pos, int[] goal, int input2) {
 		PriorityQueue<Node> queue = new PriorityQueue<Node>((Comparator<? super Node>) new NodeComparator());
 		Node root = new Node(initial, pos, pos, 0, null);
 		root.sethVal(Calculate_hDisplaced(initial, goal));
@@ -292,16 +337,28 @@ public class Project1 {
 		{
 			Node min = queue.element();
 			queue.remove();
+			if(min.getgVal() > 20)
+			{
+				return -1;
+			}
 			if(min.gethVal() == 0)
 			{
-				// print from root to destination
-				step = 0;
-				printPath(min);
-				System.out.println("Search cost (H1): " + nodeGenerated);
-				nodeGenerated = 0;
-				step = 0;
-				queue.clear();
-				return;
+				if(input2 == 1)
+				{
+					step = 0;
+					printPath(min);
+					System.out.println("Search cost (H1): " + nodeGenerated);
+					nodeGenerated = 0;
+					step = 0;
+					queue.clear();
+					return 0;
+				}
+				else
+				{
+					System.out.println("Search cost (H1): " + nodeGenerated);
+					return 0;
+				}
+				
 			}
 			
 			int [] ChildrenPos = ListOfChildrenPosition(min.getPos()); 
@@ -315,6 +372,7 @@ public class Project1 {
 				
 			}
 		}
+		return 0;
 	}
 	
 	//------------------------------Mathanttan Heuristic------------------------------------
@@ -411,7 +469,7 @@ public class Project1 {
 		return count;
 
 	}
-	public static void Heuristic2(int[] initial, int pos, int[] goal) {
+	public static int Heuristic2(int[] initial, int pos, int[] goal, int input2) {
 		PriorityQueue<Node> queue = new PriorityQueue<Node>((Comparator<? super Node>) new NodeComparator());
 		Node root = new Node(initial, pos, pos, 0, null);
 		root.sethVal(Calculate_Manhattan(initial, goal));
@@ -421,16 +479,29 @@ public class Project1 {
 		{
 			Node min = queue.element();
 			queue.remove();
+			if(min.getgVal() > 20)
+			{
+				return -1;
+			}
 			if(min.gethVal() == 0)
 			{
-				// print from root to destination
-				step = 0;
-				printPath(min);
-				System.out.println("Search Cost (H2): " + nodeGenerated);
-				nodeGenerated = 0;
-				step = 0;
-				queue.clear();
-				return;
+				if(input2 == 2)
+				{
+					// print from root to destination
+					step = 0;
+					printPath(min);
+					System.out.println("Search Cost (H2): " + nodeGenerated);
+					nodeGenerated = 0;
+					step = 0;
+					queue.clear();
+					return 0;
+				}
+				else
+				{
+					System.out.println("Search cost (H2): " + nodeGenerated);
+					return 0;
+				}
+				
 			}
 			
 			int [] ChildrenPos = ListOfChildrenPosition(min.getPos()); 
@@ -443,6 +514,7 @@ public class Project1 {
 				nodeGenerated++;
 			}
 		}
+		return 0;
 	}
 	public static void printMatrix(int mat[])
 	{
