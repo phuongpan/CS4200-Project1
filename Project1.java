@@ -1,5 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 import java.util.Random;
@@ -50,15 +52,18 @@ public class Project1 {
 						//System.out.println("Unsolvable");
 						Generate_Random_Matrix(initial);
 					}
-					//System.out.println("solvable");
+					System.out.println("solvable");
 					if(input2 == 1)
 					{
+						System.out.println("H1 running:");
 						outOfdepth = Heuristic1(initial, pos, goal, input2);
+						System.out.println("H2 running:");
 						Heuristic2(initial, pos, goal, input2);
 					}	
 					else
-					{	
+					{	System.out.println("H2 running:");
 						outOfdepth = Heuristic2(initial, pos, goal, input2);
+						System.out.println("H1 running:");
 						Heuristic1(initial, pos, goal, input2);
 					}
 				}
@@ -328,6 +333,7 @@ public class Project1 {
 	}
 	// ------------------------------------------Heuristic 1------------------------------------
 	public static int Heuristic1(int[] initial, int pos, int[] goal, int input2) {
+		Instant start = Instant.now();
 		PriorityQueue<Node> queue = new PriorityQueue<Node>((Comparator<? super Node>) new NodeComparator());
 		Node root = new Node(initial, pos, pos, 0, null);
 		root.sethVal(Calculate_hDisplaced(initial, goal));
@@ -339,15 +345,19 @@ public class Project1 {
 			queue.remove();
 			if(min.getgVal() > 20)
 			{
+				System.out.println("H1: Depth is more than 20");
 				return -1;
 			}
 			if(min.gethVal() == 0)
 			{
+				Instant end = Instant.now();
+				Duration timeElapsed = Duration.between(start, end); 
 				if(input2 == 1)
 				{
 					step = 0;
 					printPath(min);
 					System.out.println("Search cost (H1): " + nodeGenerated);
+					System.out.println("Time (H1): " + timeElapsed.toMillis() + " miliseconds" );
 					nodeGenerated = 0;
 					step = 0;
 					queue.clear();
@@ -356,6 +366,7 @@ public class Project1 {
 				else
 				{
 					System.out.println("Search cost (H1): " + nodeGenerated);
+					System.out.println("Time (H1): " + timeElapsed.toMillis() + " miliseconds" );
 					return 0;
 				}
 				
@@ -470,6 +481,7 @@ public class Project1 {
 
 	}
 	public static int Heuristic2(int[] initial, int pos, int[] goal, int input2) {
+		Instant start = Instant.now();
 		PriorityQueue<Node> queue = new PriorityQueue<Node>((Comparator<? super Node>) new NodeComparator());
 		Node root = new Node(initial, pos, pos, 0, null);
 		root.sethVal(Calculate_Manhattan(initial, goal));
@@ -481,16 +493,20 @@ public class Project1 {
 			queue.remove();
 			if(min.getgVal() > 20)
 			{
+				System.out.println("H2: Depth is more than 20");
 				return -1;
 			}
 			if(min.gethVal() == 0)
 			{
+				Instant end = Instant.now();
+				Duration timeElapsed = Duration.between(start, end);
 				if(input2 == 2)
 				{
 					// print from root to destination
 					step = 0;
 					printPath(min);
 					System.out.println("Search Cost (H2): " + nodeGenerated);
+					System.out.println("Time (H2): " + timeElapsed.toMillis() + " miliseconds" );
 					nodeGenerated = 0;
 					step = 0;
 					queue.clear();
@@ -499,6 +515,7 @@ public class Project1 {
 				else
 				{
 					System.out.println("Search cost (H2): " + nodeGenerated);
+					System.out.println("Time (H2): " + timeElapsed.toMillis() + " miliseconds" );
 					return 0;
 				}
 				
